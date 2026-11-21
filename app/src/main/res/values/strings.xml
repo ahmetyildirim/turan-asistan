@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sc_not">Not al</string>
+    <string name="sc_arz">Arz et</string>
+    <string name="sc_voice">Sesli komut</string>
+    <string name="widget_desc">Açık işler, sıradaki arz ve hızlı not alma</string>
+    <string name="wa_service_label">Turan WhatsApp gönderici</string>
+    <string name="wa_service_desc">Yalnızca sesli komutunuzu onayladıktan sonra Turan Asistan\'ın açtığı WhatsApp sohbetinde, hazırlanan mesajla birebir aynı metin kutudayken Gönder düğmesine bir kez dokunur. Başka hiçbir ekranı okumaz, dokunmaz ve hiçbir içeriği saklamaz. İstediğiniz zaman kapatabilirsiniz.</string>
+</resources>

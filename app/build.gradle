@@ -1,0 +1,91 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'com.ahmet.emirerituran'
+    compileSdk 34
+    buildToolsVersion "34.0.0"
+    defaultConfig {
+        applicationId "com.ahmet.emirerituran"
+        minSdk 24
+        targetSdk 34
+        versionCode((project.findProperty('vc') ?: '7') as int)
+        versionName((project.findProperty('vn') ?: '1.5.0') as String)
+        // Telefon sürümü: ARM; emülatör testi için -Pemu ile x86_64
+        // Güncelleme bildirimi (Drive'daki turan-guncelleme.json; kimliği sabit). -PupdateUrl=… ile test için değiştirilebilir.
+        // Gizli Hat ekranında FLAG_SECURE (ekran görüntüsü engeli). Yalnız emülatör testinde -PgzTestShots ile kapatılır.
+        buildConfigField 'boolean', 'GZ_SECURE', project.hasProperty('gzTestShots') ? 'false' : 'true'
+        buildConfigField 'String', 'X_HOME', '"' + (project.findProperty('xHome') ?: 'https://x.com/home') + '"'
+        buildConfigField 'String', 'UPDATE_MANIFEST_URL', '"' + (project.findProperty('updateUrl') ?: 'https://drive.usercontent.google.com/download?id=1UwPuURLi9EZehR3Tya0xM3nF6BNi0V86&export=download&confirm=t') + '"'
+        manifestPlaceholders = [cleartext: project.hasProperty('emu') ? 'true' : 'false']
+        ndk { abiFilters.addAll(project.hasProperty('emu') ? ['x86_64'] : (project.hasProperty('arm64') ? ['arm64-v8a'] : ['arm64-v8a', 'armeabi-v7a'])) }
+    }
+    // İmza bilgileri koda yazılmaz: kök dizindeki keystore.properties (git'e girmez) ya da ortam değişkenleri
+    // TURAN_STORE_FILE / TURAN_STORE_PASSWORD / TURAN_KEY_ALIAS / TURAN_KEY_PASSWORD. Örnek: keystore.properties.example
+    def ks = new Properties()
+    def ksFile = rootProject.file('keystore.properties')
+    if (ksFile.exists()) ksFile.withInputStream { ks.load(it) }
+    def ksVal = { String k, String env -> (ks.getProperty(k) ?: System.getenv(env)) }
+    def ksStore = ksVal('storeFile', 'TURAN_STORE_FILE')
+    def hasSigning = ksStore && ksVal('storePassword', 'TURAN_STORE_PASSWORD')
+    signingConfigs {
+        if (hasSigning) {
+            release {
+                storeFile rootProject.file(ksStore)
+                storePassword ksVal('storePassword', 'TURAN_STORE_PASSWORD')
+                keyAlias(ksVal('keyAlias', 'TURAN_KEY_ALIAS') ?: 'turan')
+                keyPassword ksVal('keyPassword', 'TURAN_KEY_PASSWORD')
+            }
+        }
+    }
+    buildTypes {
+        release {
+            // -Pslim: R8 + kaynak küçültme (sohbet ekine sığan sürüm)
+            minifyEnabled project.hasProperty('slim')
+            shrinkResources project.hasProperty('slim')
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // İmza bilgisi yoksa imzasız release APK üretilir (kendiniz imzalayın)
+            if (hasSigning) signingConfig signingConfigs.release
+        }
+    }
+    buildFeatures { buildConfig true }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    packagingOptions {
+        resources {
+            excludes += ['META-INF/DEPENDENCIES', 'META-INF/LICENSE*', 'META-INF/NOTICE*']
+            // Kuantum sonrası kripto tabloları: PDF okuma/şifre çözmede kullanılmaz
+            if (project.hasProperty('slim')) excludes += ['org/bouncycastle/pqc/**']
+        }
+        // Yerel kütüphaneleri sıkıştırarak paketle (APK küçülür, kurulumda açılır)
+        jniLibs { useLegacyPackaging project.hasProperty('slim') }
+    }
+    lint { checkReleaseBuilds false; abortOnError false }
+}
+
+// Web arayüzünü her derlemede assets/www'ye kopyala
+tasks.register('copyWeb', Copy) {
+    // Web arayüzünün kaynağı depodaki web/ klasörü; -PwebDir=/yol ile değiştirilebilir
+    from(project.findProperty('webDir') ?: rootProject.file('web')) { include 'index.html', 'style.css', 'app.js', 'sched.js', 'comm.js', 'gizli.html', 'gizli.css', 'gizli.js', 'manifest.json', 'icons/**' }
+    into "$projectDir/src/main/assets/www"
+}
+preBuild.dependsOn copyWeb
+
+dependencies {
+    implementation platform('org.jetbrains.kotlin:kotlin-bom:1.8.22')
+    implementation 'androidx.core:core:1.13.1'
+    implementation 'com.google.mlkit:text-recognition:16.0.1'
+    implementation 'com.tom-roush:pdfbox-android:2.0.27.0'
+    implementation 'androidx.work:work-runtime:2.9.1'
+    // v1.5 Gizli Hat: gömülü Tor (Guardian Project) + QR (zxing). Google hizmeti yok.
+    // Guardian Project tor-android 0.4.9.17 (Tor 0.4.9.17). Maven'deki AAR'ın 6 Java sınıfı Java 24 bayt koduyla derlenmiş;
+    // AGP 8.5'in D8'i için yalnızca sınıf sürüm numarası 61'e (Java 17) çekildi (tools/retarget-tor-aar.py). libtor.so dokunulmadı.
+    implementation files('libs/tor-android-0.4.9.17-j17.aar')
+    implementation 'info.guardianproject:jtorctl:0.4.5.7'
+    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
+    implementation 'com.google.zxing:core:3.5.3'
+}
+
+// tor-android AAR'ı compileSdk 37 ile derlenmiş olarak işaretli; kütüphane yalnızca standart Service API'si kullanır.
+tasks.matching { it.name.startsWith('check') && it.name.endsWith('AarMetadata') }.configureEach { enabled = false }

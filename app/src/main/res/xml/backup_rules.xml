@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Gizli Hat verileri ve Tor durumu yedeklere girmez (no_backup klasörü zaten hariç). -->
+<full-backup-content>
+    <exclude domain="root" path="app_TorService/" />
+    <exclude domain="sharedpref" path="gizli.xml" />
+</full-backup-content>

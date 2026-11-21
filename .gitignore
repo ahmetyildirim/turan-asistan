@@ -1,0 +1,50 @@
+# --- İmza / gizli bilgiler (ASLA commit etme) ---
+*.keystore
+*.jks
+*.p12
+*.pem
+*.key
+keystore.properties
+signing.properties
+*password*
+*.secret
+.env
+.env.*
+secrets/
+
+# --- Derleme çıktıları ---
+build/
+.gradle/
+.kotlin/
+local.properties
+*.apk
+*.aab
+*.apks
+*.idsig
+*.hprof
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Derlemede web/ klasöründen kopyalanır (copyWeb)
+app/src/main/assets/www/
+
+# --- IDE ---
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# --- Emülatör / test artıkları ---
+*.avd/
+*.img
+*.qcow2
+screenshots/
+screenshot*.png
+s_*.png
+*.log
+web/xmock.html
+
+# --- Yerel notlar / eski betikler ---
+PROGRESS-*.md
+*.old

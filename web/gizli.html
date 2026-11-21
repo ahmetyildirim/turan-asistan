@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'none'">
+<title>Gizli Hat</title>
+<link rel="stylesheet" href="gizli.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- Kilit -->
+  <section id="vLock" class="view center hidden">
+    <div class="shield">🛡️</div>
+    <h1>Gizli Hat</h1>
+    <p id="lockMsg" class="muted">PIN kodunuzu girin</p>
+    <div id="pinDots" class="dots"></div>
+    <div id="pad" class="pad"></div>
+    <button id="bioBtn" class="link hidden">Parmak izi / yüz ile aç</button>
+  </section>
+
+  <!-- Kurulum -->
+  <section id="vSetup" class="view hidden">
+    <div class="top"><button class="ib" data-act="close" aria-label="Kapat">✕</button><b>Gizli Hat</b><span></span></div>
+    <div class="pad16">
+      <div class="shield big">🛡️</div>
+      <h1>Tor üzerinden gizli iletişim</h1>
+      <ul class="plain">
+        <li>📵 Telefon numarası, e-posta ya da hesap <b>yok</b>. Kimliğiniz bu telefonda üretilen bir anahtardır (<code>0x…</code>).</li>
+        <li>🧅 Her telefon kendi <b>Tor onion hizmetini</b> yayınlar; sunucu yoktur. İki kişi kimliklerini birbirine verince bağlanır.</li>
+        <li>🔐 Mesajlar Tor'un üstüne ayrıca <b>uçtan uca şifrelenir</b> (oturum başına yeni anahtar).</li>
+        <li>⏳ Sunucu olmadığı için mesajlar <b>iki taraf aynı anda çevrimiçiyken</b> iletilir; o zamana dek sizin telefonunuzda şifreli bekler.</li>
+        <li>⚠️ Bu, onaylı/akredite bir askeri haberleşme sistemi <b>değildir</b>. Telefonun kendisi (işletim sistemi, zararlı yazılım) en zayıf halkadır. Ayrıntılar için Yardım.</li>
+      </ul>
+      <button id="createBtn" class="primary wide">Kimliğimi oluştur</button>
+      <button class="link wide" data-act="help">Nasıl çalışır? Sınırlar nelerdir?</button>
+    </div>
+  </section>
+
+  <!-- Ana ekran -->
+  <section id="vHome" class="view hidden">
+    <div class="top">
+      <button class="ib" data-act="close" aria-label="Kapat">✕</button>
+      <b>🛡️ Gizli Hat</b>
+      <span><button class="ib" data-act="help" aria-label="Yardım">?</button><button class="ib" data-act="settings" aria-label="Ayarlar">⚙︎</button></span>
+    </div>
+    <div class="scroll pad12">
+      <div class="card" id="torCard">
+        <div class="row between">
+          <div><div id="torPhase" class="b">Çevrimdışı</div><div id="torSub" class="muted small">Tor kapalı. Mesaj alıp göndermek için çevrimiçi olun.</div></div>
+          <button id="onlineBtn" class="primary">Çevrimiçi ol</button>
+        </div>
+        <div id="torBar" class="bar hidden"><i></i></div>
+      </div>
+      <div class="card">
+        <div class="row between"><div class="b">Kimliğim</div><span class="muted small">numara/e-posta yok</span></div>
+        <div id="myId" class="mono idbox" title="Kimlik"></div>
+        <div class="row gap wrap">
+          <button data-act="copyId">📋 Kopyala</button>
+          <button data-act="shareId">📤 Paylaş</button>
+          <button data-act="showQr">▦ QR</button>
+        </div>
+        <div class="muted small" id="myFp"></div>
+      </div>
+      <div class="row between mt"><h2>Kişiler</h2><button class="primary" data-act="add">＋ Kişi ekle</button></div>
+      <div id="contactList"></div>
+      <p id="noContacts" class="muted center small hidden">Henüz kişi yok. Karşı tarafın 0x kimliğini yapıştırın ya da QR kodunu tarayın; ona da kendi kimliğinizi verin.</p>
+    </div>
+  </section>
+
+  <!-- Sohbet -->
+  <section id="vChat" class="view hidden">
+    <div class="top chatTop">
+      <button class="ib" data-act="back" aria-label="Geri">←</button>
+      <div class="who" data-act="safety"><div id="chatName" class="b ell"></div><div id="chatSub" class="small muted ell"></div></div>
+      <button id="circChip" class="chip" data-act="circuit">🧅 …</button>
+      <button class="ib" data-act="call" aria-label="Sesli ara">📞</button>
+      <button class="ib" data-act="chatMenu" aria-label="Menü">⋯</button>
+    </div>
+    <div id="chatBanner" class="banner hidden"></div>
+    <div id="msgList" class="msgs"></div>
+    <div class="composer">
+      <button class="ib" data-act="attach" aria-label="Dosya ekle">📎</button>
+      <textarea id="msgInput" rows="1" placeholder="Mesaj yazın…" autocomplete="off" autocorrect="on"></textarea>
+      <button id="sendBtn" class="send" aria-label="Gönder">➤</button>
+    </div>
+  </section>
+
+  <!-- Ayarlar -->
+  <section id="vSettings" class="view hidden">
+    <div class="top"><button class="ib" data-act="home" aria-label="Geri">←</button><b>Gizli Hat ayarları</b><span></span></div>
+    <div class="scroll pad12">
+      <div class="card">
+        <label class="row between"><span>Tor devresini otomatik değiştir</span>
+          <select id="setRotate"><option value="0">Kapalı</option><option value="5">5 dakikada bir</option><option value="10">10 dakikada bir</option><option value="15">15 dakikada bir</option><option value="30">30 dakikada bir</option><option value="60">Saatte bir</option></select></label>
+        <p class="muted small">Değişimde bu cihazın buluşma devreleri kapatılır ve NEWNYM gönderilir; sohbet yeni rölelerle yeniden kurulur. Görüşme sırasında otomatik değişim yapılmaz. Giriş (guard) rölesi Tor'un güvenlik tasarımı gereği uzun süre sabit kalır (Tor birkaç sabit giriş rölesi arasında seçim yapabilir).</p>
+      </div>
+      <div class="card">
+        <label class="row between"><span>Otomatik kilit</span>
+          <select id="setLock"><option value="0">Uygulamadan çıkınca hemen</option><option value="30">30 sn sonra</option><option value="60">1 dk sonra</option><option value="300">5 dk sonra</option></select></label>
+        <label class="row between"><span>Parmak izi / yüz ile kilit açma</span><input type="checkbox" id="setBio"></label>
+        <label class="row between"><span>10 hatalı PIN denemesinde her şeyi sil</span><input type="checkbox" id="setWipeFail"></label>
+        <button data-act="changePin">PIN'i değiştir</button>
+      </div>
+      <div class="card">
+        <label class="row between"><span>Okundu bilgisi gönder</span><input type="checkbox" id="setRead"></label>
+        <label class="row between"><span>Telefon açılınca çevrimiçi ol</span><input type="checkbox" id="setBoot"></label>
+        <div class="row between"><span>Pil optimizasyonu <span id="battState" class="muted small"></span></span><button data-act="battery">Muaf tut</button></div>
+        <p class="muted small">Android pil tasarrufu, ekran kapalıyken Tor bağlantısını kesebilir. Sürekli ulaşılabilir olmak için muaf tutun (pil tüketimi artar).</p>
+      </div>
+      <div class="card danger">
+        <div class="b">🚨 Panik silme</div>
+        <p class="small">Kimlik anahtarı, tüm kişiler, mesajlar ve dosyalar kalıcı olarak silinir; şifreleme anahtarı da Android Keystore'dan yok edilir. Geri alınamaz. Kişileriniz sizi bu kimlikle bir daha bulamaz.</p>
+        <button class="dangerBtn wide" data-act="panic">Her şeyi şimdi sil</button>
+      </div>
+      <p class="muted small center" id="verInfo"></p>
+    </div>
+  </section>
+
+  <!-- Yardım -->
+  <section id="vHelp" class="view hidden">
+    <div class="top"><button class="ib" data-act="helpBack" aria-label="Geri">←</button><b>Gizli Hat · Yardım ve sınırlar</b><span></span></div>
+    <div class="scroll pad12 help">
+      <h3>Nasıl bağlanırım?</h3>
+      <ol>
+        <li>Her iki kişi de Gizli Hat'ta kimliğini oluşturur ve <b>Çevrimiçi ol</b>'a basar (Tor'a bağlanmak ilk seferde 10–60 sn sürer).</li>
+        <li><b>Kimliğim</b> kartından kimliğinizi kopyalayın/paylaşın ya da QR'ı gösterin. Karşı taraf <b>＋ Kişi ekle</b> ile yapıştırır veya QR'ı tarar.</li>
+        <li>Karşı tarafa bağlantı isteği düşer; kabul edince ya da o da sizi ekleyince bağlantı kurulur.</li>
+        <li><b>Güvenlik numarasını</b> (sohbette isme dokunun) yüz yüze veya güvenilir başka bir kanaldan karşılaştırın. Aynıysa "Doğrulandı" işaretleyin. Bu, araya giren birini (kimlik değiştirme) fark etmenin tek yoludur.</li>
+      </ol>
+      <h3>Tor ve "3 sunucu"</h3>
+      <p>Gizli Hat'ın tüm trafiği (mesaj, dosya, arama, el sıkışma) yalnızca uygulamaya gömülü Tor üzerinden gider; Tor hazır değilse hiçbir bağlantı kurulmaz (açık internete geri dönüş yoktur).</p>
+      <p>İki onion hizmeti arasında <b>çıkış düğümü (exit) yoktur</b>, dolayısıyla tek bir "çıkış IP'si" de yoktur. Sizin tarafınızda 3 röle (giriş, orta, buluşma noktası), karşı tarafta da kendi 3 rölesi bulunur. Sağ üstteki 🧅 düğmesi <b>sizin tarafınızdaki</b> rölelerin takma adını, IP'sini ve ülkesini (Tor'un kendi GeoIP verisinden, çevrimdışı) gösterir. Karşı tarafın rölelerini göremezsiniz, o da sizinkileri göremez. Karşı taraf sizin IP adresinizi hiçbir zaman görmez.</p>
+      <p><b>Anlık değiştir</b> ve otomatik değişim (varsayılan 10 dk) buluşma devrelerini kapatıp yenisini kurar. <b>Giriş rölesi (guard) değişmez</b>: Tor bunu bilerek haftalarca/aylarca sabit tutar (az sayıdaki birincil giriş rölesinden biri kullanılır); sık değişen giriş rölesi, sizi izlemeye çalışan birinin er geç kendi rölesine denk gelmesini kolaylaştırır. Orta röle de günlerce sabit kalabilir (vanguard koruması).</p>
+      <h3>Şifreleme</h3>
+      <ul>
+        <li>Kimlik: Ed25519 anahtar çifti (bu anahtar aynı zamanda onion adresinizdir; <code>0x</code> kimliği = açık anahtar + sağlama).</li>
+        <li>Her bağlantıda yeni X25519 anahtarları, karşılıklı Ed25519 imzalı el sıkışma, HKDF-SHA256 ve ChaCha20-Poly1305. Oturum anahtarları bağlantı kapanınca silinir (oturum başına ileri gizlilik). Signal tarzı "double ratchet" <b>değildir</b>: aynı oturum içinde anahtar her mesajda yenilenmez.</li>
+        <li>Telefonda: kimlik, kişiler, mesajlar ve dosyalar AES-256-GCM ile şifreli, yedeklenmeyen klasörde. Anahtar Android Keystore'da. Panik silme bu anahtarı yok eder.</li>
+      </ul>
+      <h3>Çevrimdışı kuyruk</h3>
+      <p>Sunucu yoktur. Karşı taraf çevrimdışıyken yazdıklarınız sizin telefonunuzda şifreli bekler (🕓). İkiniz aynı anda çevrimiçi olunca otomatik iletilir (✓✓). Okundu bilgisi mavi ✓✓ ile görünür (ayarlardan kapatılabilir).</p>
+      <h3>Sesli arama</h3>
+      <p>Ses Opus (yoksa G.711) ile kodlanıp aynı şifreli Tor bağlantısında taşınır. <b>1–3 saniye gecikme normaldir</b>; telsiz gibi sırayla konuşun. Görüntülü arama yoktur: Tor'un bant genişliği ve gecikmesi buna uygun değildir. Arama yalnızca uygulama/hizmet çalışırken gelir (Google bildirim servisi kullanılmaz).</p>
+      <h3>Karşı istihbarat hijyeni</h3>
+      <ul>
+        <li>Analitik, reklam, Google bildirim (FCM) yok. Gizli Hat rehberinize erişmez.</li>
+        <li>Fotoğraflar gönderilmeden önce yeniden kodlanır; konum, cihaz modeli, tarih gibi EXIF bilgileri silinir. Diğer dosyalar (PDF, Word…) olduğu gibi gider; belge içindeki yazar/şirket bilgisi temizlenmez.</li>
+        <li>Bu ekranlarda ekran görüntüsü ve "son uygulamalar" önizlemesi engellidir. Bildirimlerde gönderen ve içerik gösterilmez.</li>
+        <li>Kopyalanan kimlik 60 sn sonra panodan silinir.</li>
+        <li>Kaybolan mesajlar: sohbet menüsünden süre seçin; süre iki tarafta da uygulanır. Karşı tarafın telefonunu kontrol edemezsiniz (ekran fotoğrafı başka bir cihazla çekilebilir).</li>
+      </ul>
+      <h3>Dürüst sınırlar</h3>
+      <ul>
+        <li><b>Tor IP adresinizi gizler; cihaz ele geçirilmesini engellemez.</b> Telefonda zararlı yazılım, kilidi açık bırakılmış cihaz, işletim sistemi veya baz bandı (modem) açıkları varsa hiçbir uygulama sizi koruyamaz. Telefonun kendisi en zayıf halkadır.</li>
+        <li>Kimliğinizi bilen herkes, Tor üzerinden onion hizmetinizin <b>çevrimiçi olup olmadığını</b> görebilir (mesajlarınızı göremez). Kimliğinizi yalnızca güvendiğiniz kişilere verin.</li>
+        <li>Mobil operatörünüz ve ağ yöneticiniz Tor kullandığınızı (Tor rölesine bağlandığınızı) görebilir; kiminle konuştuğunuzu göremez.</li>
+        <li>Pil tüketimi artar; ekran kapalıyken Android bağlantıyı kesebilir. İki tarafın da çevrimiçi olması gerekir.</li>
+        <li>Bu özellik bağımsız bir güvenlik denetiminden geçmemiştir ve <b>onaylı/akredite bir askeri ya da resmi haberleşme sistemi değildir</b>. Gizlilik dereceli bilgiler için kurumunuzun onaylı sistemlerini kullanın.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<!-- Genel alt sayfa -->
+<div id="sheet" class="ov hidden"><div class="sheet"><div id="sheetTitle" class="b"></div><div id="sheetBody"></div></div></div>
+
+<!-- Devre paneli -->
+<div id="circOv" class="ov hidden"><div class="sheet">
+  <div class="row between"><div class="b">🧅 Tor devresi</div><button class="ib" data-act="closeCirc">✕</button></div>
+  <div id="circBody"></div>
+  <button id="rotateBtn" class="primary wide">⟳ Anlık değiştir</button>
+  <p id="circTimes" class="muted small center"></p>
+</div></div>
+
+<!-- Arama -->
+<div id="callOv" class="ov call hidden">
+  <div class="callBox">
+    <div class="avatar">🛡️</div>
+    <div id="callName" class="b big"></div>
+    <div id="callState" class="muted"></div>
+    <div id="callQual" class="small"></div>
+    <p class="small warn">Tor üzerinden ses 1–3 sn gecikmeli gelir; telsiz gibi sırayla konuşun. Görüntülü arama desteklenmez.</p>
+    <div id="callBtns" class="row gap center wrap"></div>
+  </div>
+</div>
+
+<!-- Görsel / QR -->
+<div id="imgOv" class="ov hidden" data-act="closeImg"><img id="imgView" alt=""><p id="imgCap" class="small center"></p></div>
+
+<div id="toast" class="toast hidden"></div>
+<script src="gizli.js"></script>
+</body>
+</html>

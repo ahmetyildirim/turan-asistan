@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2e3a23">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Turan">
+<title>Turan Asistan</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand"><img src="icons/icon-192.png" alt=""><div><b>Turan Asistan</b><small id="nextInfo">&nbsp;</small></div></div>
+  <div class="topbtns"><button class="iconbtn ghost" id="btnVoice" title="Sesli komut" aria-label="Sesli komut">🎙</button><button class="iconbtn" id="btnArz" title="Şimdi arz et">Arz</button></div>
+</header>
+
+<main>
+  <!-- AÇIK İŞLER -->
+  <section id="view-open" class="view active">
+    <div id="banner" class="banner hidden"></div>
+    <form id="addForm" class="add">
+      <input id="addInput" type="text" placeholder="Yeni konu… (ör. Mehmet aranacak)" autocomplete="off" enterkeyhint="done" aria-label="Yeni konu">
+      <button type="button" id="micBtn" class="mic hidden" title="Sesle not al" aria-label="Sesle not al">🎤</button>
+      <button type="button" id="attBtn" class="mic native-only" title="Fotoğraf / dosya ekle" aria-label="Fotoğraf veya dosya ekle">📎</button>
+      <button type="submit" class="primary">Not al</button>
+    </form>
+    <div id="pendingAtts" class="atts pending"></div>
+    <h2>Takipteki açık işler <span id="openCount" class="pill">0</span><span id="urgCount" class="pill red hidden"></span></h2>
+    <div class="search"><input id="q" type="search" placeholder="🔍 Listede ara…" autocomplete="off" aria-label="Listede ara"></div>
+    <div class="filters" id="filters">
+      <button data-f="all" class="on">Tümü</button><button data-f="acil">Acil</button><button data-f="due">Son tarihli</button><button data-f="rem">Hatırlatmalı</button><button data-f="att">Ekli</button>
+    </div>
+    <ul id="openList" class="list"></ul>
+    <p id="openEmpty" class="empty hidden">Komutanım, takipte açık iş bulunmuyor.</p>
+    <p id="openNoMatch" class="empty hidden">Aramaya uyan açık iş yok.</p>
+    <button id="btnWeekly" class="wide">📊 Haftalık özet</button>
+  </section>
+
+  <!-- ARAŞTIR -->
+  <section id="view-research" class="view">
+    <h2>İnternette araştır</h2>
+    <form id="resForm" class="add">
+      <input id="resInput" type="search" placeholder="Ne araştırayım komutanım?" autocomplete="off" enterkeyhint="search" aria-label="Araştırma konusu">
+      <button type="button" id="resMic" class="mic native-only" title="Sesle sor" aria-label="Sesle sor">🎤</button>
+      <button type="submit" class="primary">Araştır</button>
+    </form>
+    <p class="muted small">Kaynaklar: Vikipedi (Türkçe) ve DuckDuckGo anlık cevapları; anahtar gerekmez. Ayarlar'da yapay zekâ anahtarı girilmişse kaynaklardan derlenmiş kısa bir cevap da yazılır.</p>
+    <div id="resOut"></div>
+    <div id="resHistWrap" class="hidden"><h2>Son aramalar</h2><div id="resHist" class="filters"></div></div>
+    <h2 class="native-only">🛡️ Gizli Hat</h2>
+    <div class="card native-only" id="gizliCard">
+      <p class="muted small">Tor ağı üzerinden <b>numarasız, hesapsız</b> eşler arası mesajlaşma, dosya ve sesli arama. Kimliğiniz <code>0x…</code> ile başlar; kişiler kimliklerini birbirine vererek bağlanır. Sohbette sağ üstte Tor röleleri görünür; devre 10 dakikada bir (ya da anında) değişir. PIN ile kilitli, ekran görüntüsü engelli.</p>
+      <button id="gizliOpen" class="primary wide">🛡️ Gizli Hat'ı aç</button>
+    </div>
+    <h2 class="native-only">X (Twitter) zaman tüneli</h2>
+    <div class="card native-only" id="xCard">
+      <p class="muted small">X'e uygulama içindeki pencerede <b>kendi hesabınızla</b> giriş yapın. Şifreniz Turan'a verilmez ve saklanmaz; yalnızca X'in oturum çerezi bu telefonda kalır. “Özetle” dediğinizde zaman tünelinizi kaydırarak okur ve özetler.</p>
+      <table class="kv">
+        <tr><td>Oturum</td><td id="xState">—</td></tr>
+        <tr><td>Taranacak ekran sayısı</td><td><select id="xScreens" class="mini"><option>5</option><option>10</option><option>15</option><option>25</option><option>40</option></select></td></tr>
+      </table>
+      <div class="row2"><button id="xOpen">𝕏 X'i aç / giriş</button><button id="xSum" class="primary">Zaman tünelini özetle</button></div>
+      <div id="xLast" class="hidden"><div class="src" id="xLastAt"></div><p class="pw small" id="xLastText"></p><div class="b"><button id="xSpeak">🔊 Oku</button><button id="xNote">📌 Not al</button></div></div>
+      <button id="xLogout" class="wide small">X oturumunu kapat</button>
+    </div>
+  </section>
+
+  <!-- KAPANANLAR -->
+  <section id="view-archive" class="view">
+    <h2>Kapananlar <span id="archCount" class="pill">0</span></h2>
+    <div class="search"><input id="qa" type="search" placeholder="🔍 Kapananlarda ara…" autocomplete="off" aria-label="Kapananlarda ara"></div>
+    <ul id="archList" class="list"></ul>
+    <p id="archEmpty" class="empty hidden">Arşivde kayıt yok.</p>
+  </section>
+
+  <!-- ARŞİV TARAMA -->
+  <section id="view-arsiv" class="view">
+    <div id="arsivHome">
+      <h2>Arşiv tarama <span id="botCount" class="pill">0</span></h2>
+      <p class="muted small">Her <b>araştırma botu</b> ayrı bir PDF arşividir. İstediğiniz kadar PDF yükleyin; Turan tüm sayfaları (taranmış sayfaları da OCR ile) okur, dizinler ve sorularınıza sayfa numarasıyla kaynak göstererek cevap verir.</p>
+      <form id="botForm" class="add">
+        <input id="botName" type="text" placeholder="Yeni bot adı (ör. Sözleşmeler, Faturalar, Projeler)" autocomplete="off" enterkeyhint="done" aria-label="Yeni araştırma botu adı">
+        <button type="submit" class="primary">Oluştur</button>
+      </form>
+      <ul id="botList" class="list"></ul>
+      <p id="botEmpty" class="empty hidden">Komutanım, henüz araştırma botu yok. Yukarıdan bir ad yazıp oluşturun, sonra PDF ekleyin.</p>
+      <p class="web-only muted small">Arşiv tarama yalnızca Android uygulamasında çalışır.</p>
+    </div>
+    <div id="arsivBot" class="hidden">
+      <div class="bothead"><button id="botBack" aria-label="Botlara dön">←</button><b id="botTitle"></b><button id="botMore" aria-label="Bot menüsü">⋯</button></div>
+      <div class="card">
+        <form id="askForm" class="add">
+          <input id="askInput" type="search" placeholder="Bu arşive soru sorun komutanım…" autocomplete="off" enterkeyhint="search" aria-label="Arşive soru">
+          <button type="button" id="askMic" class="mic" title="Sesle sor" aria-label="Sesle sor">🎤</button>
+          <button type="submit" class="primary">Sor</button>
+        </form>
+        <p id="askHint" class="muted small"></p>
+        <div id="askOut"></div>
+      </div>
+      <h2>Belgeler <span id="docCount" class="pill">0</span></h2>
+      <div class="row2"><button id="docAdd" class="primary">＋ PDF ekle</button><button id="botSum">📊 Analiz / özet</button></div>
+      <ul id="docList" class="list"></ul>
+      <p id="docEmpty" class="empty hidden">Bu botta belge yok. “PDF ekle” ile birden fazla PDF seçebilir ya da başka bir uygulamadan <i>Paylaş → Turan Asistan → Arşive ekle</i> diyebilirsiniz.</p>
+    </div>
+  </section>
+
+  <!-- AYARLAR -->
+  <section id="view-settings" class="view">
+    <h2>Bildirimler</h2>
+    <div class="card native-only">
+      <table class="kv">
+        <tr><td>Bildirim izni</td><td id="nNotif"></td></tr>
+        <tr><td>Tam zamanlı alarm</td><td id="nExact"></td></tr>
+        <tr><td>Pil optimizasyonu</td><td id="nBattery"></td></tr>
+        <tr><td>Sıradaki bildirim</td><td id="nNext"></td></tr>
+      </table>
+      <button id="btnNPerm" class="primary wide">Bildirim iznini ver</button>
+      <button id="btnNExact" class="primary wide">Tam zamanlı alarm iznini ver</button>
+      <button id="btnNBattery" class="wide">Pil optimizasyonunu kapat (önerilir)</button>
+      <button id="btnNTest" class="wide">Deneme bildirimi gönder</button>
+      <p class="muted small">Bildirimler uygulama kapalıyken ve telefon yeniden başladıktan sonra da tam saatinde gelir. Arz bildirimi o anki açık işleri içerir; açık iş yoksa gönderilmez. Not alma bildiriminde “Not al” düğmesiyle uygulamayı açmadan not yazabilirsiniz.</p>
+    </div>
+    <div class="card web-only">
+      <p id="notifStatus" class="muted"></p>
+      <button id="btnPerm" class="primary wide">Bildirim iznini ver</button>
+      <button id="btnTest" class="wide">Deneme bildirimi gönder</button>
+      <button id="btnIcs" class="primary wide">📅 Takvime ekle (en güvenilir hatırlatma)</button>
+      <p class="muted small">Takvime eklenen tekrarlı etkinlikler, uygulama kapalıyken de telefonunuzun kendi takvimi tarafından bildirilir. Saatleri değiştirirseniz takvim dosyasını yeniden ekleyin (eskisini takvimden silin).</p>
+      <p class="muted small"><b>Android'de Google Takvim kullanıyorsanız</b> (.ics dosyasını açamıyorsa) aşağıdaki bağlantılarla her tekrarlı etkinliği tek dokunuşla ekleyin; kaydederken bildirimi “Etkinlik zamanında” seçin:</p>
+      <div id="glinks" class="glinks small"></div>
+    </div>
+
+    <h2>Program (İstanbul saati)</h2>
+    <div class="card">
+      <table class="sched">
+        <thead><tr><th></th><th>Arz</th><th>Not alma</th><th>Açık</th></tr></thead>
+        <tbody>
+          <tr><td>Hafta içi</td><td><input type="time" id="wd_arz"></td><td><input type="time" id="wd_not"></td><td><input type="checkbox" id="wd_on"></td></tr>
+          <tr><td>Cumartesi</td><td><input type="time" id="sa_arz"></td><td><input type="time" id="sa_not"></td><td><input type="checkbox" id="sa_on"></td></tr>
+          <tr><td>Pazar</td><td><input type="time" id="su_arz"></td><td><input type="time" id="su_not"></td><td><input type="checkbox" id="su_on"></td></tr>
+        </tbody>
+      </table>
+      <button id="btnSaveSched" class="primary wide">Programı kaydet</button>
+    </div>
+
+    <h2 class="native-only">Uygulama ve güncelleme</h2>
+    <div class="card native-only">
+      <table class="kv">
+        <tr><td>Sürüm</td><td id="appVer">—</td></tr>
+        <tr><td>Son kontrol</td><td id="updLast">—</td></tr>
+      </table>
+      <button id="btnUpdate" class="primary wide">⟳ Güncellemeleri kontrol et</button>
+      <p id="updStatus" class="muted small">Uygulama açılışta günde bir kez sessizce kontrol eder; yeni sürüm varsa onayınızı ister. Güncelleme kayıtlarınızı silmez.</p>
+    </div>
+
+    <h2 class="native-only">Hızlı erişim</h2>
+    <div class="card native-only">
+      <label class="row"><input type="checkbox" id="persistOn"> Bildirim panelinde kalıcı “Not al” kısayolu</label>
+      <button id="btnWidget" class="wide">▦ Ana ekrana widget ekle</button>
+      <button id="btnTile" class="wide">⚡ Hızlı ayarlara “Sesli not” kutucuğu ekle</button>
+      <table class="kv"><tr><td>Varsayılan dijital asistan</td><td id="nAssist">—</td></tr></table>
+      <button id="btnAssist" class="wide">🎙 Turan Asistan'ı varsayılan asistan yap</button>
+      <p class="muted small">Varsayılan asistan yapılınca ana ekran tuşuna basılı tutunca (veya kenardan kaydırınca / güç tuşuna uzun basınca, telefona göre) doğrudan Turan Asistan'ın sesli komut ekranı açılır. Uygulama simgesine basılı tutarak da <i>Not al · Arz et · Sesli komut</i> kısayollarına ulaşabilirsiniz.</p>
+    </div>
+
+    <h2 class="native-only">Arama, mesaj ve WhatsApp</h2>
+    <div class="card native-only">
+      <table class="kv">
+        <tr><td>Rehber</td><td id="pContacts">—</td></tr>
+        <tr><td>Telefon araması</td><td id="pCall">—</td></tr>
+        <tr><td>SMS gönderme</td><td id="pSms">—</td></tr>
+        <tr><td>WhatsApp</td><td id="pWa">—</td></tr>
+        <tr><td>Turan WhatsApp gönderici</td><td id="pWaSvc">—</td></tr>
+      </table>
+      <button id="btnPContacts" class="wide">Rehber iznini ver</button>
+      <button id="btnPCall" class="wide">Arama iznini ver</button>
+      <button id="btnPSms" class="wide">SMS iznini ver</button>
+      <label class="lbl">Varsayılan mesaj kanalı<select id="commChannel"><option value="sms">SMS</option><option value="wa">WhatsApp</option></select></label>
+      <label class="row"><input type="checkbox" id="commNoConfirm"> Aramalarda onay sorma (mesajlar her zaman onaylanır)</label>
+      <label class="row"><input type="checkbox" id="commWaAuto"> WhatsApp'ta “Gönder”e otomatik bas</label>
+      <button id="btnWaSvc" class="wide">♿ Erişilebilirlik ayarlarını aç</button>
+      <p class="muted small">Otomatik gönderme için <b>Turan WhatsApp gönderici</b> erişilebilirlik hizmetini açmanız gerekir. Hizmet yalnızca siz bir mesajı onayladıktan sonra Turan'ın açtığı sohbette, kutudaki metin hazırlanan metinle aynıysa Gönder'e bir kez dokunur. Kurulum adımları Yardım bölümündedir. Kapalıyken Turan mesajı WhatsApp'ta hazır açar, Gönder'e siz basarsınız.</p>
+    </div>
+
+    <h2 class="native-only">Yapay zekâ ile analiz (isteğe bağlı)</h2>
+    <div class="card native-only">
+      <p class="muted small">Anahtar girilmezse belgeler yalnızca telefonda (çevrimdışı) okunur ve basit kurallarla madde önerilir. Anahtar girerseniz analiz edilen belgenin metni ve görseli bu servise gönderilir; daha iyi özet ve madde çıkarılır. OpenAI uyumlu her servis çalışır (OpenAI, xAI, OpenRouter, Groq, Gemini uyumlu uç noktası vb.).</p>
+      <label class="lbl">API adresi<input type="text" id="aiUrl" placeholder="https://api.openai.com/v1" autocomplete="off"></label>
+      <label class="lbl">Model<input type="text" id="aiModel" placeholder="gpt-4o-mini" autocomplete="off"></label>
+      <label class="lbl">API anahtarı<input type="password" id="aiKey" placeholder="sk-…" autocomplete="off"></label>
+      <p id="aiStatus" class="muted small"></p>
+      <button id="btnAiSave" class="primary wide">Kaydet</button>
+      <button id="btnAiClear" class="wide">Anahtarı sil</button>
+    </div>
+
+    <h2>Görünüm</h2>
+    <div class="card">
+      <label class="lbl">Tema<select id="theme"><option value="auto">Otomatik (telefona göre)</option><option value="light">Açık</option><option value="dark">Koyu</option></select></label>
+    </div>
+
+    <h2>Ses</h2>
+    <div class="card">
+      <label class="row"><input type="checkbox" id="autoSpeak"> Arz ekranı açılınca sesli oku</label>
+      <p id="voiceStatus" class="muted small"></p>
+    </div>
+
+    <h2>Yedek</h2>
+    <div class="card">
+      <button id="btnExport" class="wide">Yedeği kaydet</button>
+      <label class="wide filebtn">Yedekten geri yükle<input type="file" id="importFile" accept="application/json,.json,application/zip,.zip"></label>
+    </div>
+  </section>
+
+  <!-- YARDIM -->
+  <section id="view-help" class="view">
+    <div class="native-only">
+    <h2>Bildirimler nasıl çalışır?</h2>
+    <div class="card">
+      <p>Turan Asistan, telefonun kendi alarm sistemini kullanır. Arz ve not alma bildirimleri <b>uygulama kapalıyken</b> ve <b>telefon yeniden başladıktan sonra</b> da ayarlardaki saatte gelir (İstanbul saati).</p>
+      <p><b>Arz:</b> O anki açık işler bildirimin içinde yazılı gelir; açık iş yoksa rahatsız edilmezsiniz. Dokununca arz ekranı açılır.</p>
+      <p><b>Not alma:</b> Bildirimdeki <i>Not al</i> düğmesine basıp doğrudan yazabilirsiniz; ya da bildirime dokunup uygulamada sesle/yazıyla ekleyin.</p>
+      <p><b>Gecikme olursa:</b> Ayarlar'da üç iznin de ✔ olduğundan emin olun. Xiaomi, Huawei, Oppo, Vivo gibi telefonlarda ayrıca <i>Ayarlar → Uygulamalar → Turan Asistan → Otomatik başlatma: Açık</i> ve <i>Pil tasarrufu: Kısıtlama yok</i> yapın.</p>
+      <p>Uygulamayı “zorla durdur”urseniz Android tüm alarmlarını siler; uygulamayı bir kez açmanız yeterlidir.</p>
+    </div>
+    <h2>Hızlı erişim</h2>
+    <div class="card">
+      <p><b>Kısa yol tuşu (varsayılan asistan):</b> Ayarlar → <i>Hızlı erişim</i> → <i>Varsayılan asistan yap</i>'a basın; açılan ekranda <i>Dijital asistan uygulaması</i> (veya <i>Asistan uygulaması</i>) → <b>Turan Asistan</b>'ı seçin. Telefona göre yol: <i>Ayarlar → Uygulamalar → Varsayılan uygulamalar → Dijital asistan uygulaması</i>. Bundan sonra ana ekran tuşuna basılı tutunca / köşeden kaydırınca / güç tuşuna uzun basınca (Samsung'da <i>Yan tuş</i> ayarından) Turan Asistan dinlemeye başlar.</p>
+      <p><b>Uygulama kısayolları:</b> Ana ekrandaki Turan Asistan simgesine basılı tutun → <i>Not al</i>, <i>Arz et</i>, <i>Sesli komut</i>. Bunları ayrı simge olarak ana ekrana da sürükleyebilirsiniz.</p>
+      <p><b>Widget:</b> Ayarlar → <i>Ana ekrana widget ekle</i> (ya da ana ekranda boş yere basılı tutun → <i>Widget'lar</i> → Turan Asistan). Açık iş ve acil sayısını, sıradaki arz saatini gösterir; Not al / Sesli / Arz düğmeleri vardır.</p>
+      <p><b>Hızlı ayarlar kutucuğu:</b> Ayarlar → <i>Hızlı ayarlara kutucuk ekle</i> (ya da bildirim panelini iki kez aşağı çekin → ✎ düzenle → <i>Turan: Sesli not</i>'u sürükleyin). Kutucuğa dokununca sesli komut ekranı açılır.</p>
+      <p><b>Kalıcı bildirim:</b> Ayarlar'da açarsanız bildirim panelinde sürekli duran sessiz bir kart olur; <i>Not al</i> ile uygulamayı açmadan yazabilirsiniz.</p>
+    </div>
+    <h2>Güncelleme</h2>
+    <div class="card">
+      <p>Turan Asistan yeni sürümleri Google Drive'dan kontrol eder: açılışta günde bir kez sessizce, ya da Ayarlar → <i>Güncellemeleri kontrol et</i> ile hemen. Yeni sürüm varsa yenilikleri gösterir ve <b>Güncelle</b> derseniz indirip kurulum ekranını açar; listeniz ve ekleriniz korunur.</p>
+      <p>İlk güncellemede Android “Bilinmeyen uygulamaları yükle” iznini ister: açılan ekranda <i>Bu kaynaktan izin ver</i>'i açıp geri dönün. İndirilen dosyanın aynı imzaya sahip olduğu kontrol edilir; farklı imzalı dosya kurulmaz.</p>
+    </div>
+    <h2>Sesli komutlar</h2>
+    <div class="card">
+      <p>Üstteki 🎙 düğmesi, widget, kutucuk veya asistan tuşu ile açılır. Örnekler:</p>
+      <ul class="cmds">
+        <li><i>“Not al: Ayşe Hanım'a teklif gönderilecek”</i> (ya da doğrudan konuyu söyleyin)</li>
+        <li><i>“Acil not: ofis malzemesi siparişi verilecek”</i></li>
+        <li><i>“Yarın saat 10'da sözleşmeyi hatırlat”</i> · <i>“30 dakika sonra toplantıyı hatırlat”</i> · <i>“Cuma 14:30'da raporu hatırlat”</i></li>
+        <li><i>“Arz et”</i> / <i>“Listeyi oku”</i> · <i>“Haftalık özet”</i></li>
+        <li><i>“Fatura ödemesi kontrolü tamamlandı”</i> (en yakın işi kapatır)</li>
+        <li><i>“Araştır: e-imza nasıl alınır”</i> · <i>“Elektronik fatura nedir”</i></li>
+        <li><i>“Ahmet'i ara”</i> · <i>“Mehmet'e evde olduğumu mesaj at”</i> · <i>“Mehmet'e WhatsApp'tan geliyorum yaz”</i></li>
+        <li><i>“Arşive sor: …”</i> · <i>“Hukuk botuna sor: …”</i> · <i>“Twitter'ı özetle”</i> · <i>“Gizli hattı aç”</i></li>
+      </ul>
+    </div>
+    <h2>Arşiv tarama</h2>
+    <div class="card">
+      <p><b>Araştırma botu</b> oluşturun (ör. “Hukuk”), <i>PDF ekle</i> ile istediğiniz kadar PDF seçin (birden fazla seçebilirsiniz) ya da başka bir uygulamadan <i>Paylaş → Turan Asistan → Arşive ekle</i> deyin. Turan her belgenin <b>tüm sayfalarını</b> arka planda okur; taranmış (resim) sayfaları telefonda OCR ile okur. İlerleme bildirimde ve listede görünür; büyük belgeler sayfa sayfa işlendiği için telefonu yormaz, uygulama kapansa da kaldığı yerden devam eder.</p>
+      <p><b>Soru sorun:</b> Botun içindeki kutuya yazın ya da 🎤 ile söyleyin. Sesli komutla da olur: <i>“Arşive sor: sözleşme ne zaman bitiyor”</i> · <i>“Hukuk botuna sor: ihtar süresi kaç gün”</i>. Yapay zekâ anahtarı varsa cevap, kaynak dosya ve sayfa numarasıyla yazılır; yoksa en ilgili bölümler dosya/sayfa bilgisiyle alıntılanır.</p>
+      <p><b>Analiz / özet:</b> Bot için ya da tek belge için 📊 düğmesi; öne çıkan kavramlar, tarihler ve temsilî bölümler (anahtar varsa ayrıntılı özet) çıkarılır. Belgeleri ⋯ menüsünden yeniden adlandırabilir, silebilir veya yeniden işletebilirsiniz.</p>
+    </div>
+    <h2>Arama ve mesaj komutları</h2>
+    <div class="card">
+      <ul class="cmds">
+        <li><i>“Ahmet'i ara”</i> · <i>“Annemi ara”</i> · <i>“Mehmet Yılmaz'a telefon et”</i></li>
+        <li><i>“Mehmet'e evde olduğumu mesaj at”</i> → “Evdeyim” · <i>“Ayşe'ye yola çıktığımı söyle”</i> → “Yola çıktım”</li>
+        <li><i>“Mehmet'e WhatsApp'tan 10 dakikaya geliyorum yaz”</i> · <i>“Ali'ye mesaj at: toplantı 3'te”</i></li>
+      </ul>
+      <p>Kişi rehberinizden bulunur (kesme işaretiyle ya da onsuz, “Mehmete”, “Ahmeti” de olur). Aynı adda birden fazla kişi veya numara varsa hangisi olduğunu sorar. Göndermeden önce mesajı ekranda gösterip sesli okur ve <b>onayınızı</b> alır; metni düzeltebilirsiniz. “WhatsApp” demezseniz Ayarlar'daki varsayılan kanal (SMS) kullanılır.</p>
+      <p>İzinler ilk kullanımda sorulur: rehber (kişiyi bulmak için), telefon (doğrudan aramak için; vermezseniz numara tuşlanmış açılır), SMS (doğrudan göndermek için; vermezseniz mesaj uygulamasında hazır açılır).</p>
+    </div>
+    <h2>WhatsApp otomatik gönderme</h2>
+    <div class="card">
+      <p>Varsayılan olarak Turan, WhatsApp'ta sohbeti mesaj yazılmış halde açar; <b>Gönder</b>'e siz basarsınız. Tam otomatik gönderim için:</p>
+      <ol class="cmds">
+        <li>Ayarlar → <i>Arama, mesaj ve WhatsApp</i> → <i>Erişilebilirlik ayarlarını aç</i>.</li>
+        <li><i>Yüklü uygulamalar</i> (veya <i>İndirilen uygulamalar</i>) → <b>Turan WhatsApp gönderici</b> → Aç → İzin ver.</li>
+        <li><b>Android 13 ve üzeri:</b> Seçenek gri ve “Kısıtlanmış ayar” diyorsa: <i>Ayarlar → Uygulamalar → Turan Asistan</i> → sağ üstteki <b>⋮</b> → <b>Kısıtlanmış ayarlara izin ver</b> (parmak izi/şifre ister). Sonra 2. adımı tekrarlayın. (Uygulama Play Store dışından kurulduğu için Android bu ek onayı ister.)</li>
+        <li>Ayarlar'da <i>WhatsApp'ta “Gönder”e otomatik bas</i> kutusunu işaretleyin.</li>
+      </ol>
+      <p class="muted small">Hizmet yalnızca onayladığınız mesajdan sonraki 20 saniye içinde ve kutudaki metin aynıysa çalışır; başka hiçbir ekranı okumaz. WhatsApp güncellemeleri ekran düzenini değiştirirse otomatik basma çalışmayabilir; o durumda mesaj yine hazır açılır.</p>
+    </div>
+    <h2>Gizli Hat (Tor)</h2>
+    <div class="card">
+      <p>Araştır → <i>Gizli Hat'ı aç</i> ya da sesli <i>“Gizli hattı aç”</i>. İlk açılışta telefonda bir anahtar çifti üretilir; kimliğiniz <code>0x</code> ile başlar ve aynı zamanda Tor onion adresinizdir. Numara, e-posta, sunucu hesabı yoktur. Karşı tarafın kimliğini yapıştırın ya da QR'ını okutun; o kabul edince bağlantı kurulur. Mesajlar, dosyalar ve sesli aramalar yalnızca uygulamaya gömülü Tor üzerinden, ayrıca uçtan uca şifreli gider.</p>
+      <p>Sohbette sağ üstteki 🧅 düğmesi sizin taraftaki Tor rölelerinin IP ve ülkelerini gösterir; <i>Anlık değiştir</i> ile yeni devre kurulur, varsayılan olarak 10 dakikada bir kendiliğinden değişir. Ayrıntılı açıklama ve dürüst sınırlar Gizli Hat içindeki <b>?</b> sayfasındadır.</p>
+      <p class="muted small">Sunucu olmadığı için mesajlar iki taraf aynı anda çevrimiçiyken iletilir. Tor'da sesli aramada 1–3 sn gecikme normaldir. Bu özellik onaylı bir askeri haberleşme sistemi değildir; telefonun kendisi en zayıf halkadır.</p>
+    </div>
+    <h2>X (Twitter) zaman tüneli</h2>
+    <div class="card">
+      <p>Araştır → <i>X'i aç</i> ile uygulama içindeki pencerede kendi hesabınızla giriş yapın (şifreniz saklanmaz). <i>Zaman tünelini özetle</i> ya da sesli <i>“Twitter'ı özetle”</i> dediğinizde Turan ayarlı ekran sayısı kadar kaydırıp gönderileri okur; en çok paylaşım yapanları, öne çıkan konuları ve dikkat çeken gönderileri özetler (yapay zekâ anahtarı varsa konu konu özet). Özeti sesli dinleyebilir veya not olarak kaydedebilirsiniz.</p>
+      <p class="muted small">X sayfa yapısını değiştirirse okuma aksayabilir; o durumda uygulamanın güncellenmesi gerekir.</p>
+    </div>
+    <h2>Öncelik, son tarih, hatırlatma</h2>
+    <div class="card">
+      <p>Bir işin ⋯ → <i>Düzenle</i> ekranından <b>Acil</b> önceliği, <b>son tarih</b> ve <b>tek seferlik hatırlatma</b> (gün + saat) verebilirsiniz. Acil işler arzda en başta “[ACİL]” olarak, son tarihi geçenler “süresi geçti” notuyla okunur. Hatırlatma, uygulama kapalı olsa da tam saatinde gelir; bildirimden <i>Tamamlandı</i> ya da <i>10 dk ertele</i> diyebilirsiniz.</p>
+    </div>
+    <h2>Fotoğraf ve dosyalar</h2>
+    <div class="card">
+      <p><b>Ekleme:</b> Not kutusunun yanındaki 📎 ile fotoğraf çekin, galeriden seçin ya da dosya (PDF, Word, TXT…) seçin; sonra <i>Not al</i>'a basın. Var olan bir işe eklemek için işin ⋯ düğmesini kullanın.</p>
+      <p><b>Paylaş menüsü:</b> Başka bir uygulamada (Galeri, WhatsApp, Dosyalar, Gmail) <i>Paylaş → Turan Asistan</i>'ı seçin; yeni iş yapabilir, mevcut işe ekleyebilir ya da analiz ettirebilirsiniz.</p>
+      <p><b>Analiz:</b> Bir eke dokunup <i>Analiz et</i> deyin. Fotoğraftaki yazı telefonda okunur (OCR, internetsiz), PDF/Word/TXT'nin metni çıkarılır ve tarih, isim, “yapılacak / gönderilecek / takip” gibi ifadelerden takip maddeleri önerilir. Uygun olanları işaretleyip <i>Emredersiniz komutanım</i>'a basın.</p>
+      <p><b>Dışarı paylaşma:</b> İşin ⋯ menüsünden <i>Paylaş</i> ile konu ve ekleri WhatsApp, e-posta vb. uygulamalara gönderebilirsiniz.</p>
+    </div>
+    <h2>Veriler</h2>
+    <div class="card">
+      <p>Tüm kayıtlar ve ekler yalnızca bu telefonda tutulur, hiçbir sunucuya gönderilmez. Uygulamayı kaldırırsanız liste de silinir; ara sıra Ayarlar → <i>Yedeği kaydet</i> yapın.</p>
+    </div>
+    </div>
+    <div class="web-only">
+    <h2>Kurulum</h2>
+    <div class="card">
+      <p><b>Android (Chrome):</b> Bu sayfayı Chrome'da açın → sağ üstteki ⋮ menü → <i>Ana ekrana ekle</i> / <i>Uygulamayı yükle</i> → Ekle.</p>
+      <p><b>iPhone (Safari, iOS 16.4+):</b> Sayfayı Safari'de açın → Paylaş düğmesi (□↑) → <i>Ana Ekrana Ekle</i> → Ekle. Sonra uygulamayı ana ekrandaki <b>Turan</b> simgesinden açıp Ayarlar'dan bildirim izni verin.</p>
+    </div>
+    <h2>Bildirimler nasıl çalışır?</h2>
+    <div class="card">
+      <p><b>En güvenilir yol – Takvime ekle:</b> Ayarlar → <i>Takvime ekle</i>. Arz ve not alma saatleri telefon takviminize tekrarlı etkinlik + alarm olarak eklenir. Uygulama kapalı olsa da, telefon yeniden başlasa da takvim sizi uyarır. Uyarıya dokunup Turan'ı açtığınızda güncel liste arz edilir.</p>
+      <p><b>Uygulama açıkken:</b> Saati gelen arz ve not alma bildirimleri anında gösterilir.</p>
+      <p><b>Uygulama açıldığında telafi:</b> Saati geçmiş ama gösterilmemiş bir arz/not alma varsa, uygulamayı açtığınız anda ekrana gelir.</p>
+      <p><b>Uygulama kapalıyken (deneysel):</b> Android Chrome'da, uygulama yüklenmişse tarayıcı arada bir arka plan kontrolü yapabilir (Periodic Background Sync). Zamanlamayı tarayıcı belirler; dakikası dakikasına gelmez, hiç gelmeyebilir. iPhone'da bu özellik yoktur.</p>
+      <p><b>Neden?</b> Sunucusu olmayan bir web uygulaması, kapalıyken kendini belirli bir saatte uyandıramaz. Bu yüzden saatli hatırlatma için takvim kullanılır; liste ise tamamen telefonunuzda saklanır, hiçbir yere gönderilmez.</p>
+    </div>
+    <h2>Veriler</h2>
+    <div class="card">
+      <p>Tüm kayıtlar yalnızca bu cihazda (tarayıcı belleğinde) tutulur. Tarayıcı verilerini silerseniz liste de silinir; ara sıra Ayarlar → <i>Yedeği kaydet</i> yapın.</p>
+      <p>Sesle not alma ve sesli okuma tarayıcının desteğine bağlıdır (Türkçe, tr-TR).</p>
+    </div>
+    </div>
+  </section>
+</main>
+
+<nav class="tabs">
+  <button data-view="open" class="active">📋<span>Açık işler</span></button>
+  <button data-view="research">🔎<span>Araştır</span></button>
+  <button data-view="arsiv">📚<span>Arşiv</span></button>
+  <button data-view="archive">🗄️<span>Kapananlar</span></button>
+  <button data-view="settings">⚙️<span>Ayarlar</span></button>
+  <button data-view="help">❔<span>Yardım</span></button>
+</nav>
+
+<!-- ARZ EKRANI -->
+<div id="arzModal" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="sheet">
+    <div class="sheet-head"><img src="icons/icon-192.png" alt=""><b>Tekmil</b></div>
+    <div id="arzText" class="arz"></div>
+    <div class="actions">
+      <button id="btnSpeak">🔊 Sesli oku</button>
+      <button id="btnArzOk" class="primary">Tamam</button>
+    </div>
+  </div>
+</div>
+
+<!-- DÜZENLE -->
+<div id="editModal" class="modal hidden" role="dialog" aria-modal="true">
+  <form class="sheet" id="editForm">
+    <b>Konuyu düzenle</b>
+    <input id="editInput" type="text" autocomplete="off">
+    <div class="grid2">
+      <label class="lbl">Öncelik<select id="editPrio"><option value="">Normal</option><option value="acil">Acil</option></select></label>
+      <label class="lbl">Son tarih<input type="date" id="editDue"></label>
+    </div>
+    <label class="lbl">Hatırlatma (tek sefer, İstanbul saati)<input type="datetime-local" id="editRem"></label>
+    <div class="quick" id="remQuick"><button type="button" data-q="60">1 saat sonra</button><button type="button" data-q="tom9">Yarın 09:00</button><button type="button" data-q="clear">Hatırlatmayı kaldır</button></div>
+    <div class="actions">
+      <button type="button" id="btnEditCancel">Vazgeç</button>
+      <button type="submit" class="primary">Kaydet</button>
+    </div>
+  </form>
+</div>
+
+<!-- SEÇENEK MENÜSÜ -->
+<div id="sheetModal" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="sheet">
+    <b id="sheetTitle"></b>
+    <div id="sheetBody" class="menu"></div>
+    <button id="sheetClose">Kapat</button>
+  </div>
+</div>
+
+<!-- BELGE ANALİZİ -->
+<div id="anaModal" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="sheet">
+    <div class="sheet-head"><img src="icons/icon-192.png" alt=""><b>Belge analizi</b></div>
+    <div id="anaInfo" class="muted small"></div>
+    <div id="anaSummary" class="banner hidden"></div>
+    <b>Önerilen takip maddeleri</b>
+    <div id="anaList"></div>
+    <button id="anaAddRow" class="small">+ Madde ekle</button>
+    <details><summary class="small">Çıkarılan metin</summary><pre id="anaText" class="pre"></pre></details>
+    <div class="actions">
+      <button id="anaCancel">Vazgeç</button>
+      <button id="anaOk" class="primary">Emredersiniz komutanım</button>
+    </div>
+  </div>
+</div>
+
+<!-- SESLİ KOMUT -->
+<div id="voiceModal" class="modal hidden" role="dialog" aria-modal="true">
+  <form class="sheet" id="voiceForm">
+    <div class="sheet-head"><img src="icons/icon-192.png" alt=""><b>Emredin komutanım</b></div>
+    <div class="add">
+      <input id="voiceInput" type="text" placeholder="Komut söyleyin veya yazın…" autocomplete="off" enterkeyhint="go" aria-label="Komut">
+      <button type="button" id="voiceMic" class="mic" title="Konuş" aria-label="Konuş">🎤</button>
+    </div>
+    <div id="voiceReply" class="banner hidden"></div>
+    <p class="muted small">Örnek: “Not al: rapor hazırlanacak” · “Yarın 10'da Mehmet'i aramayı hatırlat” · “Arz et” · “Fatura tamamlandı” · “Araştır: …” · “Ahmet'i ara” · “Mehmet'e evde olduğumu mesaj at” · “Twitter'ı özetle” · “Arşive sor: …” · “Gizli hattı aç”</p>
+    <div class="actions">
+      <button type="button" id="voiceClose">Kapat</button>
+      <button type="submit" class="primary">Uygula</button>
+    </div>
+  </form>
+</div>
+
+<!-- HAFTALIK ÖZET -->
+<div id="weekModal" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="sheet">
+    <div class="sheet-head"><img src="icons/icon-192.png" alt=""><b>Haftalık özet</b></div>
+    <div id="weekText" class="arz"></div>
+    <div class="actions">
+      <button id="weekSpeak">🔊 Oku</button>
+      <button id="weekShare">↗ Paylaş</button>
+      <button id="weekOk" class="primary">Tamam</button>
+    </div>
+  </div>
+</div>
+
+<!-- ARŞİV ANALİZİ -->
+<div id="sumModal" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="sheet">
+    <div class="sheet-head"><img src="icons/icon-192.png" alt=""><b id="sumTitle">Analiz</b></div>
+    <div id="sumText" class="arz pw"></div>
+    <div class="actions">
+      <button id="sumSpeak">🔊 Oku</button>
+      <button id="sumNote">📌 Not al</button>
+      <button id="sumOk" class="primary">Tamam</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"><span id="toastText"></span><button id="toastUndo" class="hidden">Geri al</button></div>
+
+<script src="sched.js"></script>
+<script src="comm.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme" parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:colorPrimary">#2E3A23</item>
+        <item name="android:colorPrimaryDark">#2E3A23</item>
+        <item name="android:colorAccent">#D4AF37</item>
+        <item name="android:statusBarColor">#2E3A23</item>
+        <item name="android:navigationBarColor">#FFFFFF</item>
+        <item name="android:windowBackground">@android:color/white</item>
+    </style>
+    <style name="GizliTheme" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:colorPrimary">#0E1410</item>
+        <item name="android:colorPrimaryDark">#0E1410</item>
+        <item name="android:colorAccent">#7BD389</item>
+        <item name="android:statusBarColor">#0E1410</item>
+        <item name="android:navigationBarColor">#0E1410</item>
+        <item name="android:windowBackground">@android:color/black</item>
+    </style>
+</resources>

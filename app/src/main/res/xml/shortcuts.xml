@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut android:shortcutId="not" android:enabled="true" android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/sc_not" android:shortcutLongLabel="@string/sc_not">
+        <intent android:action="android.intent.action.VIEW"
+            android:targetPackage="com.ahmet.emirerituran" android:targetClass="com.ahmet.emirerituran.MainActivity">
+            <extra android:name="view" android:value="not" />
+        </intent>
+    </shortcut>
+    <shortcut android:shortcutId="arz" android:enabled="true" android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/sc_arz" android:shortcutLongLabel="@string/sc_arz">
+        <intent android:action="android.intent.action.VIEW"
+            android:targetPackage="com.ahmet.emirerituran" android:targetClass="com.ahmet.emirerituran.MainActivity">
+            <extra android:name="view" android:value="arz" />
+        </intent>
+    </shortcut>
+    <shortcut android:shortcutId="voice" android:enabled="true" android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/sc_voice" android:shortcutLongLabel="@string/sc_voice">
+        <intent android:action="android.intent.action.VIEW"
+            android:targetPackage="com.ahmet.emirerituran" android:targetClass="com.ahmet.emirerituran.MainActivity">
+            <extra android:name="view" android:value="voice" />
+        </intent>
+    </shortcut>
+</shortcuts>

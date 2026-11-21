@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/w_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_vertical"
+    android:padding="12dp"
+    android:background="@drawable/widget_bg">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+        <ImageView android:layout_width="28dp" android:layout_height="28dp" android:src="@mipmap/ic_launcher" android:layout_marginEnd="8dp" />
+        <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content"
+            android:text="Turan Asistan" android:textColor="#F0EBD7" android:textSize="16sp" android:textStyle="bold" />
+    </LinearLayout>
+    <TextView android:id="@+id/w_count" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_marginTop="6dp" android:text="Açık iş: –" android:textColor="#FFFFFF" android:textSize="15sp" />
+    <TextView android:id="@+id/w_next" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="Sıradaki arz: –" android:textColor="#C9B882" android:textSize="13sp" />
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="8dp">
+        <TextView android:id="@+id/w_not" android:layout_width="0dp" android:layout_weight="1" android:layout_height="36dp"
+            android:gravity="center" android:background="@drawable/widget_btn" android:text="✎ Not al"
+            android:textColor="#263219" android:textStyle="bold" android:textSize="14sp" android:layout_marginEnd="6dp" />
+        <TextView android:id="@+id/w_voice" android:layout_width="0dp" android:layout_weight="1" android:layout_height="36dp"
+            android:gravity="center" android:background="@drawable/widget_btn2" android:text="🎙 Sesli"
+            android:textColor="#F0EBD7" android:textSize="14sp" android:layout_marginEnd="6dp" />
+        <TextView android:id="@+id/w_arz" android:layout_width="0dp" android:layout_weight="1" android:layout_height="36dp"
+            android:gravity="center" android:background="@drawable/widget_btn2" android:text="Arz et"
+            android:textColor="#F0EBD7" android:textSize="14sp" />
+    </LinearLayout>
+</LinearLayout>
