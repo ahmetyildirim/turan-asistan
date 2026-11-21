@@ -90,7 +90,8 @@
       </form>
       <ul id="botList" class="list"></ul>
       <p id="botEmpty" class="empty hidden">Komutanım, henüz araştırma botu yok. Yukarıdan bir ad yazıp oluşturun, sonra PDF ekleyin.</p>
-      <p class="web-only muted small">Arşiv tarama yalnızca Android uygulamasında çalışır.</p>
+      <p class="web-only desktop-hide muted small">Arşiv tarama yalnızca Android uygulamasında çalışır.</p>
+      <p class="desktop-only desk-na">⚠️ Arşiv tarama (PDF okuma, OCR, dizinleme) Linux sürümünde desteklenmiyor.</p>
     </div>
     <div id="arsivBot" class="hidden">
       <div class="bothead"><button id="botBack" aria-label="Botlara dön">←</button><b id="botTitle"></b><button id="botMore" aria-label="Bot menüsü">⋯</button></div>
@@ -134,6 +135,19 @@
       <p class="muted small">Takvime eklenen tekrarlı etkinlikler, uygulama kapalıyken de telefonunuzun kendi takvimi tarafından bildirilir. Saatleri değiştirirseniz takvim dosyasını yeniden ekleyin (eskisini takvimden silin).</p>
       <p class="muted small"><b>Android'de Google Takvim kullanıyorsanız</b> (.ics dosyasını açamıyorsa) aşağıdaki bağlantılarla her tekrarlı etkinliği tek dokunuşla ekleyin; kaydederken bildirimi “Etkinlik zamanında” seçin:</p>
       <div id="glinks" class="glinks small"></div>
+    </div>
+
+    <h2 class="desktop-only">Linux sürümü</h2>
+    <div class="card desktop-only">
+      <p class="desk-na">⚠️ Linux sürümünde desteklenmiyor:</p>
+      <ul class="small">
+        <li>WhatsApp otomatik gönderme, telefon araması ve SMS komutları</li>
+        <li>Gizli Hat (Tor üzerinden şifreli mesaj ve sesli arama)</li>
+        <li>Arşiv tarama (PDF/OCR), X (Twitter) zaman tüneli özeti, yapay zekâ ile analiz</li>
+        <li>Android güncelleyici (Drive APK), ana ekran kısayolu / hızlı ayar kutucuğu</li>
+        <li>Sesle not alma (konuşma tanıma) — komutları yazarak verebilirsiniz</li>
+      </ul>
+      <p class="muted small">İş takibi, notlar, hatırlatmalar, arz/not alma programı, Turan ile yazışma, araştırma, yedekleme ve takvim (.ics) çalışır. Bildirimler uygulama açıkken gösterilir. Veriler yalnızca bu bilgisayarda (~/.config/Turan Asistan) saklanır.</p>
     </div>
 
     <h2>Program (İstanbul saati)</h2>

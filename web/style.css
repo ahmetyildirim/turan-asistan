@@ -63,6 +63,9 @@ button.mic.rec{background:var(--red);color:#fff;border-color:var(--red)}
 .glinks a{display:block;margin:6px 0;color:var(--olive2);font-weight:600}
 .native .web-only{display:none!important}
 html:not(.native) .native-only{display:none!important}
+html:not(.desktop) .desktop-only{display:none!important}
+.desktop .desktop-hide,.desktop #botForm,.desktop #botEmpty{display:none!important}
+.desk-na{color:#b45309;font-weight:600;margin:.2em 0 .5em}
 .kv{width:100%;border-collapse:collapse;font-size:15px}.kv td{padding:5px 2px;border-bottom:1px solid var(--line)}.kv td:last-child{text-align:right;font-weight:600}
 .toast button{white-space:nowrap}.toast span{flex:1}
 .atts{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}

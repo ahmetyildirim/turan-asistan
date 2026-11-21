@@ -1,0 +1,65 @@
+{
+  "name": "turan-asistan",
+  "productName": "Turan Asistan",
+  "desktopName": "turan-asistan.desktop",
+  "version": "1.5.0",
+  "description": "Turan Asistan - Linux masaüstü sürümü (web arayüzü, Electron)",
+  "homepage": "https://github.com/ahmetyildirim/turan-asistan",
+  "author": {
+    "name": "Ahmet Yıldırım",
+    "email": "ahmetyildirim@users.noreply.github.com"
+  },
+  "license": "GPL-3.0-only",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "sync-web": "rm -rf app-web && cp -r ../web app-web",
+    "start": "npm run sync-web && electron .",
+    "dist": "npm run sync-web && electron-builder --linux AppImage --x64 --publish never"
+  },
+  "build": {
+    "appId": "com.ahmet.turanasistan.desktop",
+    "productName": "Turan Asistan",
+    "artifactName": "TuranAsistan-${version}-x86_64.AppImage",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "app-web/**/*",
+      "package.json"
+    ],
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "category": "Office",
+      "executableName": "turan-asistan",
+      "synopsis": "Turan Asistan - iş takibi ve not asistanı",
+      "desktop": {
+        "entry": {
+          "Name": "Turan Asistan",
+          "StartupWMClass": "Turan Asistan"
+        }
+      },
+      "syncDesktopName": true
+    },
+    "electronLanguages": [
+      "tr",
+      "en-US"
+    ],
+    "compression": "maximum"
+  },
+  "devDependencies": {
+    "electron": "^45.4.1",
+    "electron-builder": "^26.18.0"
+  }
+}

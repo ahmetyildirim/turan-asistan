@@ -1,6 +1,6 @@
 /* Turan Asistan – service worker */
 importScripts('sched.js');
-var VERSION = 'eet-v6';
+var VERSION = 'eet-v7';
 var SHELL = ['./', './index.html', './style.css', './app.js', './sched.js', './comm.js', './manifest.json',
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png'];
 var DATA_CACHE = 'eet-data';

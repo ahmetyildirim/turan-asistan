@@ -2,7 +2,7 @@
 
 **Turan Asistan**, askerî üslupla konuşan (“Komutanım”, “Arz ederim”) kişisel bir Android asistanıdır: iş takibi, hatırlatma, belge/PDF arşivi tarama, sesli komut, arama/mesaj/WhatsApp kısayolları, X zaman tüneli özeti ve **v1.5.0** ile Tor üzerinden çalışan, numarasız ve hesapsız **Gizli Hat** iletişimi.
 
-Arayüz tamamen Türkçedir. Uygulama WebView içinde çalışan bir web arayüzü (`web/`) ile yerel Android kodundan (`app/`) oluşur.
+Arayüz tamamen Türkçedir. Uygulama WebView içinde çalışan bir web arayüzü (`web/`) ile yerel Android kodundan (`app/`) oluşur. Aynı web arayüzünün Linux masaüstü sürümü (AppImage) `desktop/` klasöründedir.
 
 ## İndir / kur
 
@@ -11,6 +11,25 @@ Resmî, imzalı APK'lar Google Drive klasöründedir:
 
 - `turan-asistan-X.Y.Z-arm64.apk` — güncel telefonlar (arm64) için küçük APK; uygulama içi güncelleyici bunu indirir.
 - `turan-asistan-X.Y.Z.apk` — arm64 + armv7 (eski telefonlar dahil) tam APK.
+
+## Linux kurulum (masaüstü, AppImage)
+
+v1.5.0'dan itibaren aynı web arayüzü Linux masaüstünde de çalışır (Electron, x86_64). `TuranAsistan-X.Y.Z-x86_64.AppImage` dosyasını Drive klasöründen ya da GitHub **Releases** sayfasından indirin, sonra:
+
+```bash
+chmod +x TuranAsistan-1.5.0-x86_64.AppImage
+./TuranAsistan-1.5.0-x86_64.AppImage
+```
+
+- AppImage FUSE 2 ister. Ubuntu 22.04+: `sudo apt install libfuse2` (24.04: `libfuse2t64`). FUSE kurulamıyorsa: `APPIMAGE_EXTRACT_AND_RUN=1 ./TuranAsistan-1.5.0-x86_64.AppImage`
+- Sandbox hatası verirse (bazı dağıtımlarda kullanıcı ad alanları kapalıdır) `--no-sandbox` ile başlatın.
+- Veriler yalnızca bu bilgisayarda saklanır: `~/.config/Turan Asistan`. Telefondan veri taşımak için Ayarlar → Yedek (dışa/içe aktar).
+
+**Linux'ta çalışan:** iş takibi, notlar, ekler, öncelik/son tarih/hatırlatma, arz ve not alma programı, Turan ile yazılı komutlar, internette araştırma, kapananlar, yedekleme, takvime ekleme (.ics) ve masaüstü bildirimleri (uygulama açıkken).
+
+**Linux sürümünde desteklenmiyor:** WhatsApp otomatik gönderme, telefon araması/SMS, Gizli Hat (Tor), arşiv tarama (PDF/OCR), X zaman tüneli özeti, yapay zekâ ile analiz, Android güncelleyici (Drive APK), hızlı erişim kutucukları ve sesle not alma (konuşma tanıma). Uygulama içinde bu bölümler gizlenir ve “Linux sürümünde desteklenmiyor” notu gösterilir. Sesli okuma, sistemde Türkçe ses (speech-dispatcher) varsa çalışır. Masaüstü sürümünün kendi güncelleyicisi yoktur; yeni sürümü indirip eskisinin yerine koyun.
+
+Kaynaktan derleme (Node.js 20+): `tools/build-desktop.sh 1.5.0` ya da `cd desktop && npm ci && npm run dist` → `desktop/dist/`.
 
 Aynı APK'lar GitHub **Releases** sayfasında da yayınlanır. Kurulumda Android “Bilinmeyen uygulamaları yükle” iznini ister. En düşük Android sürümü: 7.0 (API 24).
 

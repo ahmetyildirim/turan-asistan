@@ -48,3 +48,7 @@ web/xmock.html
 # --- Yerel notlar / eski betikler ---
 PROGRESS-*.md
 *.old
+
+# Linux masaüstü simgesi (derleme çıktısı değil)
+!desktop/build/
+!desktop/build/icon.png

@@ -1,6 +1,7 @@
 #!/bin/bash
 # Turan Asistan sürüm çıkarma yardımcısı (bkz. RELEASE.md).
 # Kullanım: tools/release.sh X.Y.Z VERSION_CODE        → derler, doğrular, APK'ları /workspace'e kopyalar
+#           (derleme modu ayrıca tools/build-desktop.sh ile Linux AppImage'ı da üretir; DESKTOP=0 ile atlanır)
 #           tools/release.sh --publish X.Y.Z "notlar"   → Drive adımlarından SONRA: commit + tag + push + GitHub release
 # Drive yükleme ve manifest güncelleme Grok Bot'un Drive araçlarıyla yapılır (bu betik Drive'a dokunmaz).
 # İmza: keystore.properties (git'e girmez) ya da TURAN_* ortam değişkenleri. Parolayı asla yazdırma/commit etme.
@@ -26,8 +27,11 @@ if [ "${1:-}" = "--publish" ]; then
   git rev-parse -q --verify "refs/tags/v$V" >/dev/null || git tag -a "v$V" -m "Turan Asistan $V"
   gh auth setup-git >/dev/null 2>&1 || true   # git push için gh kimlik bilgisi
   git push -q origin main "v$V"
-  gh release view "v$V" >/dev/null 2>&1 && { echo "Release v$V zaten var"; exit 0; }
-  gh release create "v$V" "$OUT/turan-asistan-$V-arm64.apk" "$OUT/turan-asistan-$V.apk" --title "Turan Asistan $V" --notes "$NOTES"
+  AI="$OUT/TuranAsistan-$V-x86_64.AppImage"; EXTRA=(); [ -f "$AI" ] && EXTRA=("$AI")
+  if gh release view "v$V" >/dev/null 2>&1; then
+    echo "Release v$V zaten var"; [ -f "$AI" ] && gh release upload "v$V" "$AI" --clobber; exit 0
+  fi
+  gh release create "v$V" "$OUT/turan-asistan-$V-arm64.apk" "$OUT/turan-asistan-$V.apk" "${EXTRA[@]}" --title "Turan Asistan $V" --notes "$NOTES"
   echo "Yayınlandı: v$V"; exit 0
 fi
 
@@ -44,4 +48,5 @@ for f in "$OUT/turan-asistan-$V.apk" "$OUT/turan-asistan-$V-arm64.apk"; do
   "$BT/apksigner" verify --print-certs "$f" | grep -q "$CERT" || { echo "Sertifika tutmuyor: $f"; exit 1; }
   echo "TAMAM $(stat -c %s "$f") bayt  $f"
 done
-echo "Sıradaki: APK'ları Drive'a yükle → tools/make-manifest.sh → manifesti yerinde güncelle → tools/check-update.sh → tools/release.sh --publish $V \"notlar\""
+[ "${DESKTOP:-1}" = 0 ] || tools/build-desktop.sh "$V"
+echo "Sıradaki: APK'ları + AppImage'ı Drive'a yükle (AppImage manifeste GİRMEZ) → tools/make-manifest.sh → manifesti yerinde güncelle → tools/check-update.sh → tools/release.sh --publish $V \"notlar\""

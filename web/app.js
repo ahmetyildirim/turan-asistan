@@ -5,6 +5,10 @@
   var pending = []; // henüz bir işe bağlanmamış ekler (state.pending ile kalıcı)
   var N = window.TuranNative || null; // Android uygulaması içindeyse yerel köprü
   if (N) document.documentElement.classList.add('native');
+  // Linux masaüstü (Electron) sürümü: preload yalnız {platform, version} verir; Android köprüsü yoktur
+  var D = (!N && window.TuranDesktop) || null;
+  if (D) document.documentElement.classList.add('desktop');
+  var NA = D ? 'Linux sürümünde desteklenmiyor' : 'Android uygulamasında çalışır';
   var $ = function (id) { return document.getElementById(id); };
   var SEED = ['Haftalık rapor hazırlığı', 'Toplantı notlarını düzenle', 'Fatura ödemesi kontrolü',
     'Sözleşme yenileme takibi', 'Ofis malzemesi siparişi'];
@@ -266,7 +270,8 @@
   }
 
   // Sesle not alma (Web Speech API)
-  var SR = window.SpeechRecognition || window.webkitSpeechRecognition, rec = null;
+  // Masaüstünde Chromium'un konuşma tanıma servisi (Google API anahtarı gerektirir) çalışmaz → kapalı
+  var SR = D ? null : (window.SpeechRecognition || window.webkitSpeechRecognition), rec = null;
   window.__turanVoice = function (t) {
     if (!t) return; t = t.charAt(0).toLocaleUpperCase('tr-TR') + t.slice(1);
     $('addInput').value = ($('addInput').value ? $('addInput').value + ' ' : '') + t; $('addInput').focus();
@@ -731,6 +736,17 @@
   };
   $('autoSpeak').onchange = function () { refresh(); state.settings.autoSpeak = this.checked; save(); };
   if (N) $('voiceStatus').textContent = 'Sesle not alma ve sesli okuma telefonun Türkçe ses hizmetlerini kullanır.'; else $('voiceStatus').textContent = 'Sesle not alma: ' + (SR ? 'destekleniyor' : 'bu tarayıcıda yok') + ' · Sesli okuma: ' + (window.speechSynthesis ? 'destekleniyor' : 'yok');
+
+  if (D) $('voiceStatus').textContent = 'Sesle not alma (konuşma tanıma) Linux sürümünde desteklenmiyor; komutları yazarak verebilirsiniz. Sesli okuma: ' + (window.speechSynthesis ? 'sistemde Türkçe ses varsa çalışır' : 'yok');
+  if (D) (function () {
+    var na = /^(Hızlı erişim|Güncelleme|Arşiv tarama|Arama ve mesaj komutları|WhatsApp otomatik gönderme|Gizli Hat \(Tor\)|X \(Twitter\) zaman tüneli|Kurulum)$/;
+    Array.prototype.forEach.call(document.querySelectorAll('#view-help h2'), function (h) {
+      var c = h.nextElementSibling;
+      if (!na.test(h.textContent.trim()) || !c) return;
+      var p = document.createElement('p'); p.className = 'desk-na'; p.textContent = '⚠️ Linux sürümünde desteklenmiyor.';
+      c.insertBefore(p, c.firstChild);
+    });
+  })();
 
   window.__turanImport = function (text) { importText(text); };
   $('btnExport').onclick = function () {
@@ -1267,19 +1283,19 @@
   function runComm(c, raw) {
     try { document.activeElement && document.activeElement.blur(); } catch (e) {}
     if (c.type === 'x') {
-      if (!N) { reply('Komutanım, X özeti Android uygulamasında çalışır.'); return; }
+      if (!N) { reply('Komutanım, X özeti ' + NA + '.'); return; }
       closeVoice(); N.openX(!!c.auto);
       say(c.auto ? 'Emredersiniz komutanım, zaman tünelini tarayıp özetliyorum.' : 'Emredersiniz komutanım.');
       return;
     }
     if (c.type === 'archive') {
-      if (!N) { reply('Komutanım, arşiv tarama Android uygulamasında çalışır.'); return; }
+      if (!N) { reply('Komutanım, arşiv tarama ' + NA + '.'); return; }
       var b = findBot(c.bot);
       if (!b) { reply('Komutanım, henüz araştırma botu yok. Arşiv bölümünden bir bot oluşturup PDF ekleyin. Arz ederim.'); return; }
       closeVoice(); openBot(b.id); $('askInput').value = c.q; archAsk(b.id, c.q, true);
       return;
     }
-    if (!N) { reply('Komutanım, arama ve mesaj komutları Android uygulamasında çalışır.'); return; }
+    if (!N) { reply('Komutanım, arama ve mesaj komutları ' + NA + '.'); return; }
     reply('Rehberde aranıyor komutanım…', true);
     needPerm('contacts').then(function (ok) {
       if (!ok) {
