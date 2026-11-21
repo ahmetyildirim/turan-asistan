@@ -23,8 +23,10 @@ if [ "${1:-}" = "--publish" ]; then
     if [ -n "$PW" ] && git grep --cached -q -F -- "$PW"; then echo "HATA: imza parolası izlenen bir dosyada!"; exit 1; fi
   fi
   git diff --cached --quiet || git commit -q -m "Sürüm $V"
-  git tag -a "v$V" -m "Turan Asistan $V"
+  git rev-parse -q --verify "refs/tags/v$V" >/dev/null || git tag -a "v$V" -m "Turan Asistan $V"
+  gh auth setup-git >/dev/null 2>&1 || true   # git push için gh kimlik bilgisi
   git push -q origin main "v$V"
+  gh release view "v$V" >/dev/null 2>&1 && { echo "Release v$V zaten var"; exit 0; }
   gh release create "v$V" "$OUT/turan-asistan-$V-arm64.apk" "$OUT/turan-asistan-$V.apk" --title "Turan Asistan $V" --notes "$NOTES"
   echo "Yayınlandı: v$V"; exit 0
 fi
